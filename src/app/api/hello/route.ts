@@ -1,15 +1,14 @@
-// import type { NextApiRequest, NextApiResponse } from 'next'
-import { NextResponse } from 'next/server'
+// app/api/hello/route.ts
+import { PrismaClient } from '../../../generated/prisma'
 
- 
-// export function GET(
-//   req: NextApiRequest,
-//   res: NextApiResponse
-// ) {
-//   console.log(req.headers, res)
-//   return NextResponse.json({message: "hello world"})
-// }
 
-export function GET() {
-  return NextResponse.json({message: "hello world"})
+
+export async function GET() {
+  const prisma = new PrismaClient()
+  try {
+    const result = await prisma.department.findMany()
+    return Response.json(result)
+  } finally {
+    await prisma.$disconnect()
+  }
 }
