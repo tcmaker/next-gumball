@@ -1,4 +1,3 @@
-// app/api/hello/route.ts
 import { PrismaClient } from '../../../generated/prisma'
 
 
