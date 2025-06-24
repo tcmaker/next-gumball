@@ -14,7 +14,138 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model TCMemberInfo {
+  TCMemberID                 String              @id @default(uuid())
+  WAMemberID                 Int
+  MembershipType             String
+  FirstName                  String
+  LastName                   String
+  Email                      String
+  RenewalDate                DateTime?
+  Keyfob                     Int?
+  DiscordID                  BigInt?             @unique
+  Status                     String
+  
+  ToolApprovals              ToolApprovals?
+  ToolSupervisors            ToolSupervisors?
+  MemberStorage              MemberStorage?
+  
+  @@index([Keyfob, FirstName, LastName, Email])
+}
+
 model Department {
-  department_id    String@id
-  name             String 
+  DepartmentID               String              @id
+  Name                       String
+  ToolLocks                  ToolLocks?
+  Tools                      Tools?
+}
+
+
+model RedTags {
+  RedTagID                   Int                 @id
+  Description                String
+  Inform                     Int
+  DefaultNotes               String
+  URLHelpFile                String
+  EmailLog                   EmailLog?
+}
+
+model Tools {
+  ToolID                     String              @id
+  ToolName                   String
+  ToolLockID                 String?             @unique
+  DepartmentID               String              @unique
+  IsBorked                   Boolean
+  
+  ToolLock                   ToolLocks?          @relation(fields: [ToolLockID], references: [ToolLockID])
+  Department                 Department          @relation(fields: [DepartmentID], references: [DepartmentID])
+  ToolApprovals              ToolApprovals?
+}
+
+model ToolApprovals {
+  ApprovalID                 Int                 @id
+  ToolID                     String              @unique
+  TCMemberID                 String              @unique
+  ApprovalDate               DateTime
+  
+  Tool                       Tools               @relation(fields: [ToolID], references: [ToolID])
+  TCMember                   TCMemberInfo        @relation(fields: [TCMemberID], references: [TCMemberID])
+}
+
+model ToolSupervisors {
+  SupervisorID               String              @id
+  TCMemberID                 String              @unique
+  
+  TCMember                   TCMemberInfo        @relation(fields: [TCMemberID], references: [TCMemberID])
+}
+
+model MemberStorage {
+  StorageID                  Int                 @id
+  CubbyID                    Int
+  TCMemberID                 String              @unique
+  TAG                        String
+  DateAssigned               DateTime
+  Location                   String
+  
+  TCMember                   TCMemberInfo        @relation(fields: [TCMemberID], references: [TCMemberID])
+  StorageInfo                StorageInfo?
+  StorageScans               StorageScans?
+}
+
+model StorageInfo {
+  StoreInfoID                Int                 @id
+  StorageID                  Int                 @unique
+  Name                       String
+  Size                       String
+  Notes                      String
+  
+  Storage                    MemberStorage       @relation(fields: [StorageID], references: [StorageID])
+}
+
+model StorageScans {
+  ScanID                     Int                 @id
+  StorageID                  Int                 @unique
+  QRCode                     String
+  TicketExpirationDate       DateTime
+  MemberShipID               String              @unique
+  RedTagReason               String
+  Note                       String
+  ProjectImage               String
+  
+  Storage                    MemberStorage       @relation(fields: [StorageID], references: [StorageID])
+  EmailLog                   EmailLog?
+}
+
+
+model KeyfobLogs {
+  TransactionID              BigInt              @id
+  TCMemberID                 String
+  WAMemberID                 Int
+  DateScanned                DateTime
+  ToolLockID                 String
+  ToolID                     String
+  Keyfob                     BigInt
+}
+
+model ToolLocks {
+  ToolLockID                 String              @id
+  DepartmentID               String              @unique
+  LockName                   String
+  Location                   String
+  
+  Department                 Department          @relation(fields: [DepartmentID], references: [DepartmentID])
+  Tools                      Tools?
+}
+
+model EmailLog {
+  EmailID                    Int                 @id
+  EmailAddress               String
+  ScanID                     Int                 @unique
+  MemberID                   Int
+  RedTagID                   Int                 @unique
+  Notes                      String
+  DatesSent                  DateTime
+  
+  Scan                       StorageScans        @relation(fields: [ScanID], references: [ScanID])
+  RedTag                     RedTags             @relation(fields: [RedTagID], references: [RedTagID])
 }
